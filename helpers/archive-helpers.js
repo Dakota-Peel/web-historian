@@ -33,12 +33,20 @@ exports.readListOfUrls = function(callback) {
 };
 
 exports.isUrlInList = function(url, callback) {
+  console.log('checking in list',url);
   fs.readFile(exports.paths.list, 'utf8', function(err, data) {
+    console.log(data, 'inside');
+    if(err){
+      console.log(err);
+    }
     data = data.split("\n");
     if(data.indexOf(url) !== -1){
-      callback(true);
+      console.log('true');
+      return true;
+
     }else{
-      callback(false);
+      console.log('false');
+      return false;
     }
   });
 };
@@ -63,7 +71,9 @@ exports.downloadUrls = function(urlArray) {
   urlArray.forEach(function(value){
     var fixturePath = exports.paths.archivedSites + "/" + value;
 
-        fs.writeFile(fixturePath, value);
+
+
+      fs.writeFile(fixturePath, value);
   });
 };
 

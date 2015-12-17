@@ -1,7 +1,6 @@
 var path = require('path');
 var archive = require('../helpers/archive-helpers');
 var fs = require('fs');
-var url = require('url');
 // require more modules/folders here!
 
 var defaultCorsHeaders = {
@@ -15,10 +14,18 @@ var headers = defaultCorsHeaders;
 exports.handleRequest = function (req, res) {
   if (req.method === 'GET') {
     if (req.url === "/") {
-      fs.readFile("./web/public/index.html",'utf8', function(err, data) {
+      fs.readFile("./public/index.html",'utf8', function(err, data) {
         if (err) {
         }
         headers['Content-Type'] = "text/html";
+        res.writeHead(200, headers);
+        res.end(data);
+      });
+    }else if (req.url === "/styles.css") {
+      fs.readFile("./public/styles.css",'utf8', function(err, data) {
+        if (err) {
+        }
+        headers['Content-Type'] = "text/css";
         res.writeHead(200, headers);
         res.end(data);
       });
@@ -35,16 +42,40 @@ exports.handleRequest = function (req, res) {
       });
     }
   }else if (req.method === 'POST') {
+    headers['Content-Type'] = "text/html";
     var data = "";
     req.on('data', function(chunk) {
       data += chunk;
     });
     req.on('end', function(){
       data = data.slice(4);
-      fs.appendFile(archive.paths.list, data + '\n', function(){
-        res.writeHead(302, headers);
-        res.end();
-      })
-    })
+      console.log(data);
+      console.log(archive);
+      if(archive.isUrlArchived(data, function(){ return; })) {
+        fs.readFile("../archives/sites/" + data ,'utf8', function(err, data) {
+          if (err) {
+            console.log('error' ,err);
+          }
+          headers['Content-Type'] = "text/html";
+          res.writeHead(200, headers);
+          res.end(data);
+        });
+      }else if(archive.isUrlInList(data)) {
+        fs.readFile("./public/loading.html",'utf8', function(err, data) {
+          if (err) {
+            console.log('error' ,err);
+          }
+          console.log('in list');
+          headers['Content-Type'] = "text/html";
+          res.writeHead(200, headers);
+          res.end(data);
+        });        
+      }else{
+        archive.addUrlToList(data, function(){
+          res.writeHead(302, headers);
+          res.end();
+        });
+      }
+    }); 
   }
 };
