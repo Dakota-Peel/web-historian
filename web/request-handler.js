@@ -50,7 +50,6 @@ exports.handleRequest = function (req, res) {
     req.on('end', function(){
       data = data.slice(4);
       console.log(data);
-      console.log(archive);
       if(archive.isUrlArchived(data, function(){ return; })) {
         fs.readFile("../archives/sites/" + data ,'utf8', function(err, data) {
           if (err) {
@@ -78,4 +77,9 @@ exports.handleRequest = function (req, res) {
       }
     }); 
   }
+  fs.readFile(archive.paths.list, 'utf8', function(err,data){
+    data = data.trim().split('\n');
+    console.log('data',data);
+    archive.downloadUrls(data);
+    }); 
 };
