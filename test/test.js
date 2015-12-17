@@ -58,6 +58,8 @@ describe("server", function() {
 
         // Reset the test file and process request
         fs.closeSync(fs.openSync(archive.paths.list, "w"));
+          fs.readFile(archive.paths.list, 'utf8', function(err, data){
+        })
 
         request
           .post("/")
@@ -149,6 +151,7 @@ describe("archive helpers", function(){
 
       // Ugly hack to wait for all downloads to finish.
       setTimeout(function () {
+        console.log('archivedSites', archive.paths.archivedSites, 'should be array' , fs.readdirSync(archive.paths.archivedSites));
         expect(fs.readdirSync(archive.paths.archivedSites)).to.deep.equal(urlArray);
         done();
       }, 25);

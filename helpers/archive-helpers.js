@@ -25,17 +25,49 @@ exports.initialize = function(pathsObj) {
 // The following function names are provided to you to suggest how you might
 // modularize your code. Keep it clean!
 
-exports.readListOfUrls = function() {
+exports.readListOfUrls = function(callback) {
+  fs.readFile(exports.paths.list, 'utf8', function(err, data) {
+    data = data.split("\n");
+    callback(data);
+  });
 };
 
-exports.isUrlInList = function() {
+exports.isUrlInList = function(url, callback) {
+  fs.readFile(exports.paths.list, 'utf8', function(err, data) {
+    data = data.split("\n");
+    if(data.indexOf(url) !== -1){
+      callback(true);
+    }else{
+      callback(false);
+    }
+  });
 };
 
-exports.addUrlToList = function() {
+exports.addUrlToList = function(url, callback) {
+  fs.appendFile(exports.paths.list, url + '\n', function(){
+    callback();
+  })
 };
 
-exports.isUrlArchived = function() {
+exports.isUrlArchived = function(url, callback) {
+  fs.readFile(exports.paths.archivedSites + '/' + url, 'utf8', function(err, data) {
+    if (err) {
+      callback(false);
+    } else {
+      callback(true);
+    }
+  });
 };
 
-exports.downloadUrls = function() {
+exports.downloadUrls = function(urlArray) {
+  urlArray.forEach(function(value){
+    var fixturePath = exports.paths.archivedSites + "/" + value;
+
+        fs.writeFile(fixturePath, value);
+  });
 };
+
+// fs.readFile(exports.paths.list, 'utf8', function(err,data){
+//   data = data.split('\n');
+//   exports.downloadUrls(data);
+// })
