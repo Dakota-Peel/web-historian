@@ -1,6 +1,7 @@
 var path = require('path');
 var archive = require('../helpers/archive-helpers');
 var fs = require('fs');
+var httpHelpers = require('./http-helpers');
 // require more modules/folders here!
 
 var defaultCorsHeaders = {
@@ -14,21 +15,11 @@ var headers = defaultCorsHeaders;
 exports.handleRequest = function (req, res) {
   if (req.method === 'GET') {
     if (req.url === "/") {
-      fs.readFile("./public/index.html",'utf8', function(err, data) {
-        if (err) {
-        }
-        headers['Content-Type'] = "text/html";
-        res.writeHead(200, headers);
-        res.end(data);
-      });
+
+      httpHelpers.serveAssets(res, "./public/index.html");
     }else if (req.url === "/styles.css") {
-      fs.readFile("./public/styles.css",'utf8', function(err, data) {
-        if (err) {
-        }
-        headers['Content-Type'] = "text/css";
-        res.writeHead(200, headers);
-        res.end(data);
-      });
+      httpHelpers.serveAssets(res, "./public/styles.css");
+
     }else{
       fs.readFile(archive.paths.archivedSites + req.url, 'utf8', function(err, data){
         if(err){
@@ -42,23 +33,18 @@ exports.handleRequest = function (req, res) {
       });
     }
   }else if (req.method === 'POST') {
-    headers['Content-Type'] = "text/html";
+    // headers['Content-Type'] = "text/html";
     var data = "";
     req.on('data', function(chunk) {
       data += chunk;
     });
     req.on('end', function(){
       data = data.slice(4);
-      console.log(data);
-      if(archive.isUrlArchived(data, function(){ return; })) {
-        fs.readFile("../archives/sites/" + data ,'utf8', function(err, data) {
-          if (err) {
-            console.log('error' ,err);
-          }
-          headers['Content-Type'] = "text/html";
-          res.writeHead(200, headers);
-          res.end(data);
-        });
+      if(/*archive.isUrlArchived(data)*/ true) {
+        console.log('past return');
+
+          httpHelpers.serveAssets(res, "../archives/sites/" + data );
+
       }else if(archive.isUrlInList(data)) {
         fs.readFile("./public/loading.html",'utf8', function(err, data) {
           if (err) {
@@ -78,8 +64,9 @@ exports.handleRequest = function (req, res) {
     }); 
   }
   fs.readFile(archive.paths.list, 'utf8', function(err,data){
-    data = data.trim().split('\n');
-    console.log('data',data);
-    archive.downloadUrls(data);
-    }); 
+    if(data !== '/'){
+      data = data.trim().split('\n');
+      archive.downloadUrls(data);
+    } 
+  });
 };

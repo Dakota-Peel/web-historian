@@ -44,40 +44,30 @@ exports.isUrlInList = function(url, callback) {
     data = data.split("\n");
     if(data.indexOf(url) !== -1){
       console.log('true');
-      return true;
+      callback(true);
 
     }else{
       console.log('false');
-      return false;
+      callback(false);
     }
   });
 };
 
 exports.addUrlToList = function(url, callback) {
-  fs.appendFile(exports.paths.list, url + '\n', function(){
-    callback();
-  })
+  fs.appendFile(exports.paths.list, url + '\n', callback);
 };
 
 exports.isUrlArchived = function(url, callback) {
-  fs.readFile(exports.paths.archivedSites + '/' + url, 'utf8', function(err, data) {
-    if (err) {
-      callback(false);
-    } else {
-      callback(true);
-    }
-  });
+  fs.exists(exports.paths.archivedSites + '/' + url, callback);
 };
 
 exports.downloadUrls = function(urlArray) {
   urlArray.forEach(function(value){
-    console.log('inside downloadUrls', value);
     var fixturePath = exports.paths.archivedSites + "/" + value;
     var siteData = '';
     request.get('http://' + value).on('data',function(data){
       siteData += data;
     }).on('end', function(){
-      console.log('data',siteData);
       fs.writeFile(fixturePath,siteData,'utf8');
     });
 
